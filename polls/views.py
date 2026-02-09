@@ -3,32 +3,39 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
+from django.utils import timezone
 
 from .models import Choice, Question
+
 
 class IndexView(generic.ListView):
     template_name = "polls/index.html"
     context_object_name = "latest_question_list"
 
     def get_queryset(self):
-        """Return the last five published questions."""
-        return Question.objects.order_by("-pub_date")[:5]
+        """
+        Return the last five published questions (not including future ones).
+        """
+        return Question.objects.filter(
+            pub_date__lte=timezone.now()
+        ).order_by("-pub_date")[:5]
+
 
 class DetailView(generic.DetailView):
     model = Question
     template_name = "polls/detail.html"
 
+
 class ResultsView(generic.DetailView):
     model = Question
     template_name = "polls/results.html"
 
+
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
-        # request.POST['choice'] returns the ID of the selected choice
         selected_choice = question.choice_set.get(pk=request.POST["choice"])
     except (KeyError, Choice.DoesNotExist):
-        # Redisplay the question voting form with an error message.
         return render(
             request,
             "polls/detail.html",
@@ -38,9 +45,8 @@ def vote(request, question_id):
             },
         )
     else:
-        # Use F() to avoid race conditions (database-level update)
         selected_choice.votes = F("votes") + 1
         selected_choice.save()
-        
-        # Always return HttpResponseRedirect after POST data
-        return HttpResponseRedirect(reverse("polls:results", args=(question.id,)))
+        return HttpResponseRedirect(
+            reverse("polls:results", args=(question.id,))
+        )
