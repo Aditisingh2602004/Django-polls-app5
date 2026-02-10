@@ -1,0 +1,23 @@
+body {
+    background: url("images/s2.png") no-repeat ;
+    background-size: cover;
+}
+
+li a {
+    color: blue;
+}
+
+a:focus {
+    outline: 2px solid #0d6efd;
+}
+
+body {
+    font-family: system-ui, Arial, sans-serif;
+}
+
+.empty {
+    font-size: 20px;
+    color: #08b4f2;
+    text-align: center;
+}
+
